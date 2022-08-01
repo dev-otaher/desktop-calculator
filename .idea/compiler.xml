@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel target="17">
+      <module name="Desktop_Calculator.Desktop_Calculator-task-build-classes-java.main" target="11" />
+      <module name="Desktop_Calculator.Desktop_Calculator-task-build-generated-sources-annotationProcessor-java.main" target="11" />
+      <module name="Desktop_Calculator.Desktop_Calculator-task-build-generated-sources-headers-java.main" target="11" />
+      <module name="Desktop_Calculator.Desktop_Calculator-task-build-reports-tests.main" target="11" />
+      <module name="Desktop_Calculator.Desktop_Calculator-task-build-test-results.main" target="11" />
+      <module name="Desktop_Calculator.Desktop_Calculator-task-build-tmp.main" target="11" />
+      <module name="Desktop_Calculator.Desktop_Calculator-task.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Anonymous_classes-And_always_these_rules.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Anonymous_classes-Implement_Runnable.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Anonymous_classes-String_reverser.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Anonymous_classes-Theory.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Anonymous_classes-What_about_context.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Anonymous_classes_properties-Create_instance.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Anonymous_classes_properties-Iterations.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Anonymous_classes_properties-My_possibilities.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Anonymous_classes_properties-Theory.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Custom_threads-Numbers_filter.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Custom_threads-Possible_order_of_the_output_strings.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Custom_threads-Statements_about_starting_threads.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Custom_threads-String_processor.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Custom_threads-Theory.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Functional_interfaces-A_string_operator.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Functional_interfaces-Abstract_built-in_classes.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Functional_interfaces-Statements.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Functional_interfaces-Ternary_predicate.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Functional_interfaces-Theory.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Lambda_expressions-Creating_a_closure.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Lambda_expressions-Production_of_all_numbers_in_the_range.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Lambda_expressions-Theory.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Method_references-Ascending_and_descending_sorting.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Method_references-Getting_fields_of_classes.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Method_references-Theory.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Stack-Deque_interface.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Stack-Html_Parser.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Stack-The_LIFO_principle_in_action.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Stack-Theory.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Stack-Using_deque.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Threads_as_objects-Counting_threads.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Threads_as_objects-Getting_current_thread_info.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Threads_as_objects-Is_thread_daemon.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Threads_as_objects-Theory.main" target="11" />
+      <module name="Desktop_Calculator.Topics-Threads_as_objects-Thread_name.main" target="11" />
+      <module name="Desktop_Calculator.util.main" target="11" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
