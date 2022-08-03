@@ -7,6 +7,7 @@ import org.hyperskill.hstest.stage.SwingTest;
 import org.hyperskill.hstest.testcase.CheckResult;
 import org.hyperskill.hstest.testing.swing.SwingComponent;
 
+import java.awt.*;
 import java.util.Map;
 
 import static java.util.Map.entry;
@@ -79,11 +80,12 @@ public class CalculatorTest extends SwingTest {
                 if (!mResultLabel.text().trim().equals(expectedResult)) {
                     throw new WrongAnswer("Result Label contains wrong number.\n" +
                         "    Your output: " + mResultLabel.text().trim() +
-                        "\nExpected output: " + expectedResult);
+                        "\nExpected output: " + expectedResult +
+                        "\nEquation: " + mEquationLabel.text().trim());
                 }
             } else {
                 if (!mEquationLabel.text().trim().equals(expectedResult)) {
-                    throw new WrongAnswer("Equation Label contains wrong number.\n" +
+                    throw new WrongAnswer("Equation Label contains wrong values.\n" +
                         "    Your output: " + mEquationLabel.text()
                         .trim() + "\n" +
                         "Expected output: " + expectedResult);
@@ -107,18 +109,30 @@ public class CalculatorTest extends SwingTest {
             if (checkResult) {
                 if (!mResultLabel.text().trim().equals(expectedResult)) {
                     throw new WrongAnswer(feedBack + "\n" + "Your output: " + mResultLabel.text() +
-                            "\nExpected output: " + expectedResult);
+                        "\nExpected output: " + expectedResult +
+                        "\nEquation: " + mEquationLabel.text().trim());
                 }
             } else {
                 if (!mEquationLabel.text().trim().equals(expectedResult)) {
                     throw new WrongAnswer(feedBack + "\n" + "Your output: " + mEquationLabel.text() +
-                            "\nExpected output: " + expectedResult);
+                        "\nExpected output: " + expectedResult);
                 }
             }
         } catch (NullPointerException e) {
             throw new WrongAnswer("Either Equation Label or Result Label is empty.");
         }
 
+        mClear.click();
+    }
+
+    private void typeText (String text) {
+
+        for (int i = 0; i < text.length(); i++) {
+            JButtonFixture button = charToButtonMap.get(text.charAt(i));
+            button.click();
+        }
+
+        mEquationLabel.foreground().requireEqualTo(Color.RED.darker());
         mClear.click();
     }
 
@@ -184,11 +198,12 @@ public class CalculatorTest extends SwingTest {
         typeText("8", "8", false);
         typeText("9", "9", false);
         typeText("0", "0", false);
-        typeText("+", "+", false);
-        typeText("-", "-", false);
-        typeText("*", multiplySymbol, false);
-        typeText("/", divideSymbol, false);
+        typeText("1+", "1".concat(addSymbol), false);
+        typeText("1-", "1".concat(subtractSymbol), false);
+        typeText("1*", "1".concat(multiplySymbol), false);
+        typeText("1/", "1".concat(divideSymbol), false);
         typeText(".", ".", false);
+        mClear.click();
 
         return correct();
     }
@@ -196,6 +211,7 @@ public class CalculatorTest extends SwingTest {
     //Testing calculations
     @DynamicTest()
     CheckResult test4 () {
+
         typeText("9+1=", "10", true);
         typeText("1-99=", "-98", true);
         typeText("9/2=", "4.5", true);
@@ -222,6 +238,40 @@ public class CalculatorTest extends SwingTest {
         typeText("25+9/3-8*8=", "-36", true);
         typeText("3.8*7.5/2.5*5=", "57", true);
         typeText("9.2/2.3*12/2.4=", "20", true);
+
+        return correct();
+    }
+
+    //test formatting equations
+    @DynamicTest
+    CheckResult test6 () {
+
+        typeText(".6+", "0.6".concat(addSymbol), false,
+            "Your program should properly format the equation whenever an operator is inserted.");
+
+        typeText("7.*", "7.0".concat(multiplySymbol), false,
+            "Your program should properly format the equation whenever an operator is inserted.");
+
+        typeText("*", "", false, "Equations should not start with an operator");
+        typeText("+", "", false, "Equations should not start with an operator");
+        typeText("-", "", false, "Equations should not start with an operator");
+        typeText("/", "", false, "Equations should not start with an operator");
+
+        typeText("2+*", "2".concat(multiplySymbol), false,
+            "Clicking on an operator should override the preceding operator");
+
+        typeText("6+/3=", "2", true);
+
+        return correct();
+    }
+
+    //test equation validation
+    @DynamicTest(feedback = "The color of EquationLabel should change to indicate invalid equations" +
+        " when the EqualButton is clicked")
+    CheckResult test7 () {
+
+        typeText("2+=");
+        typeText("5/0=");
 
         return correct();
     }

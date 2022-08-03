@@ -1,6 +1,9 @@
 package calculator;
 
+
 import javax.swing.*;
+import java.awt.*;
+import java.util.List;
 import java.util.*;
 
 public class Calculator extends JFrame {
@@ -57,6 +60,16 @@ public class Calculator extends JFrame {
         return operators.contains(op.toCharArray()[0]);
     }
 
+    private boolean isButtonOperator(JButton button) {
+        return operators.contains(button.getText().toCharArray()[0]);
+    }
+
+    private boolean isEquationEndByOp() {
+        String text = equationLabel.getText();
+        int length = text.length();
+        return operators.contains(text.charAt(length - 1));
+    }
+
     private int getOpPrecedence(Character op) {
         switch (op) {
             case '\u002B':
@@ -106,6 +119,13 @@ public class Calculator extends JFrame {
     }
 
     private void evaluate() {
+        if (equationLabel.getText().length() == 0) {
+            return;
+        }
+        if (isEquationEndByOp() || equationLabel.getText().contains("\u00F70")) {
+            equationLabel.setForeground(Color.RED.darker());
+            return;
+        }
         String equation = equationLabel.getText();
         Deque<String> postfix = convertInfixToPostfix(equation);
         Deque<Float> operandStack = new ArrayDeque<>();
@@ -126,6 +146,11 @@ public class Calculator extends JFrame {
         } else {
             resultLabel.setText(String.valueOf(result));
         }
+        equationLabel.setForeground(Color.BLACK);
+    }
+
+    private void handleOperatorClick() {
+
     }
 
     private List<JButton> createButtons() {
@@ -160,7 +185,10 @@ public class Calculator extends JFrame {
                     button.addActionListener(e -> this.evaluate());
                     break;
                 case "Clear":
-                    button.addActionListener(e -> equationLabel.setText(""));
+                    button.addActionListener(e -> {
+                        resultLabel.setForeground(Color.BLACK);
+                        equationLabel.setText("");
+                    });
                     break;
                 case "Delete":
                     button.addActionListener(e -> {
@@ -171,7 +199,31 @@ public class Calculator extends JFrame {
                     });
                     break;
                 default:
-                    button.addActionListener(e -> equationLabel.setText(equationLabel.getText() + button.getText()));
+                    if (isButtonOperator(button)) {
+                        button.addActionListener(e -> {
+                            String text = equationLabel.getText();
+                            int length = text.length();
+                            if (length == 0) {
+                                return;
+                            }
+                            char lastChar = text.charAt(length - 1);
+                            if (operators.contains(lastChar)) {
+                                equationLabel.setText(text.substring(0, length - 1) + button.getText());
+                                return;
+                            }
+                            if (lastChar == '.') {
+                                equationLabel.setText(text + "0" + button.getText());
+                                return;
+                            }
+                            if (length == 2 && text.charAt(0) == '.' && Character.isDigit(lastChar)) {
+                                equationLabel.setText("0." + lastChar + button.getText());
+                                return;
+                            }
+                            equationLabel.setText(text + button.getText());
+                        });
+                    } else {
+                        button.addActionListener(e -> equationLabel.setText(equationLabel.getText() + button.getText()));
+                    }
                     break;
             }
             buttons.add(button);
