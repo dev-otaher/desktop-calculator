@@ -8,6 +8,12 @@ import java.util.*;
 
 public class Calculator extends JFrame {
     final List<Character> operators;
+    final char PLUS_SYMBOL = '\u002B';
+    final char MINUS_SYMBOL = '-';
+    final char MULTIPLY_SYMBOL = '\u00D7';
+    final char DIVIDE_SYMBOL = '\u00F7';
+    final char SQRT_SYMBOL = '\u221A';
+    final char EXP_SYMBOL = '^';
     JLabel resultLabel;
     JLabel equationLabel;
 
@@ -20,13 +26,13 @@ public class Calculator extends JFrame {
         equationLabel.setName("EquationLabel");
         equationLabel.setBounds(50, 35, 195, 20);
 
-        operators = new ArrayList<>(List.of('\u002B', '-', '\u00D7', '\u00F7'));
+        operators = new ArrayList<>(List.of(PLUS_SYMBOL, MINUS_SYMBOL, MULTIPLY_SYMBOL, DIVIDE_SYMBOL, SQRT_SYMBOL, EXP_SYMBOL));
     }
 
     public Calculator() {
         super("Calculator");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(300, 400);
+        setSize(300, 430);
         setLayout(null);
         add(equationLabel);
         add(resultLabel);
@@ -46,9 +52,27 @@ public class Calculator extends JFrame {
                 return a * b;
             case '\u00F7':
                 return a / b;
+            case '\u221A':
+                return (float) Math.sqrt(a);
+            case '^':
+                return (float) Math.pow(a, b);
             default:
                 throw new ArithmeticException("Invalid Operator!");
         }
+    }
+
+    private int countChar(String string, char c) {
+        int count = 0;
+        for (char character : string.toCharArray()) {
+            if (c == character) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private char getLastChar(String string) {
+        return string.charAt(string.length() - 1);
     }
 
     private boolean isOperator(Character op) {
@@ -56,27 +80,30 @@ public class Calculator extends JFrame {
     }
 
     private boolean isOperator(String op) {
-        if (op.length() > 1) return false;
-        return operators.contains(op.toCharArray()[0]);
+        return op.length() == 1 && isOperator(op.toCharArray()[0]);
     }
 
     private boolean isButtonOperator(JButton button) {
-        return operators.contains(button.getText().toCharArray()[0]);
+        return isOperator(button.getText().toCharArray()[0]);
     }
 
-    private boolean isEquationEndByOp() {
-        String text = equationLabel.getText();
-        int length = text.length();
-        return operators.contains(text.charAt(length - 1));
+    private boolean isEquationEndedByOp() {
+        return isOperator(getLastChar(equationLabel.getText()));
+    }
+
+    private boolean containsDivisionByZero() {
+        return equationLabel.getText().contains(DIVIDE_SYMBOL + "0");
     }
 
     private int getOpPrecedence(Character op) {
         switch (op) {
-            case '\u002B':
-            case '-':
+            case PLUS_SYMBOL:
+            case MINUS_SYMBOL:
                 return 1;
-            case '\u00D7':
-            case '\u00F7':
+            case MULTIPLY_SYMBOL:
+            case DIVIDE_SYMBOL:
+            case SQRT_SYMBOL:
+            case EXP_SYMBOL:
                 return 2;
             default:
                 return 0;
@@ -90,7 +117,7 @@ public class Calculator extends JFrame {
             char token = equation.charAt(i);
             if (Character.isDigit(token)) {
                 String buffer = "";
-                while (i < equation.length() && !isOperator(equation.charAt(i))) {
+                while (i < equation.length() && (Character.isDigit(equation.charAt(i)) || equation.charAt(i) == '.')) {
                     buffer += equation.charAt(i);
                     i++;
                 }
@@ -99,10 +126,12 @@ public class Calculator extends JFrame {
             } else if (Objects.equals('(', token)) {
                 opStack.push(token);
             } else if (Objects.equals(')', token)) {
-                while (!opStack.isEmpty() && !opStack.peek().equals('(')) {
+                while (!opStack.isEmpty()) {
                     Character pop = opStack.pop();
                     if (isOperator(pop)) {
                         output.add(pop.toString());
+                    } else if (pop == '(') {
+                        break;
                     }
                 }
             } else if (isOperator(token)) {
@@ -118,58 +147,166 @@ public class Calculator extends JFrame {
         return output;
     }
 
-    private void evaluate() {
-        if (equationLabel.getText().length() == 0) {
-            return;
-        }
-        if (isEquationEndByOp() || equationLabel.getText().contains("\u00F70")) {
-            equationLabel.setForeground(Color.RED.darker());
-            return;
-        }
-        String equation = equationLabel.getText();
-        Deque<String> postfix = convertInfixToPostfix(equation);
+    private float evaluatePostfix(Deque<String> postfix) {
         Deque<Float> operandStack = new ArrayDeque<>();
         for (String token : postfix) {
-            if (isOperator(token)) {
-                float op2 = operandStack.pop();
+            if (isOperator(token) && token.equals(String.valueOf(SQRT_SYMBOL))) {
                 float op1 = operandStack.pop();
-                float result = calculate(op1, op2, token.toCharArray()[0]);
+                float result = calculate(op1, 0, token.toCharArray()[0]);
+                operandStack.push(result);
+            } else if (isOperator(token)) {
+                float op2 = operandStack.pop();
+                float result;
+                if (operandStack.isEmpty()) {
+                    result = calculate(0, op2, token.toCharArray()[0]);
+                } else {
+                    float op1 = operandStack.pop();
+                    result = calculate(op1, op2, token.toCharArray()[0]);
+                }
                 operandStack.push(result);
             } else {
                 operandStack.push(Float.parseFloat(token));
             }
         }
-        float result = operandStack.pop();
-        int roundedResult = Math.round(result);
-        if (result == roundedResult) {
-            resultLabel.setText(String.valueOf(roundedResult));
-        } else {
-            resultLabel.setText(String.valueOf(result));
+        return operandStack.pop();
+    }
+
+    private void evaluate() {
+        if (equationLabel.getText().length() == 0) {
+            return;
         }
+        if (isEquationEndedByOp() || containsDivisionByZero()) {
+            equationLabel.setForeground(Color.RED.darker());
+            return;
+        }
+        String equation = equationLabel.getText();
+        Deque<String> postfix = convertInfixToPostfix(equation);
+        float result = evaluatePostfix(postfix);
+        if (Float.isNaN(result)) {
+            equationLabel.setForeground(Color.RED.darker());
+            return;
+        }
+        String string = String.valueOf(result);
+        String text = string.endsWith(".0") ? string.replace(".0", "") : string;
+        resultLabel.setText(text);
         equationLabel.setForeground(Color.BLACK);
     }
 
-    private void handleOperatorClick() {
+    private void appendToEquation(String string) {
+        equationLabel.setText(equationLabel.getText() + string);
+    }
 
+    private void addActionListener(JButton button) {
+        switch (button.getName()) {
+            case "Equals":
+                button.addActionListener(e -> this.evaluate());
+                break;
+            case "Clear":
+                button.addActionListener(e -> {
+                    equationLabel.setForeground(Color.BLACK);
+                    equationLabel.setText("");
+                });
+                break;
+            case "Delete":
+                button.addActionListener(e -> {
+                    String text = equationLabel.getText();
+                    if (!text.isEmpty()) {
+                        equationLabel.setText(text.substring(0, text.length() - 1));
+                    }
+                });
+                break;
+            case "Parentheses":
+                button.addActionListener(e -> {
+                    String equation = equationLabel.getText();
+                    if (countChar(equation, '(') == countChar(equation, ')')
+                        || equation.charAt(equation.length() - 1) == '('
+                        || isOperator(equation.charAt(equation.length() - 1))) {
+                        appendToEquation("(");
+                    } else {
+                        appendToEquation(")");
+                    }
+                });
+                break;
+            case "SquareRoot":
+                button.addActionListener(e -> appendToEquation(operators.get(4).toString() + "("));
+                break;
+            case "PowerTwo":
+                button.addActionListener(e -> appendToEquation("^(2)"));
+                break;
+            case "PowerY":
+                button.addActionListener(e -> appendToEquation("^("));
+                break;
+            case "PlusMinus":
+                button.addActionListener(actionEvent -> {
+                    String text = equationLabel.getText();
+                    int length = text.length();
+                    if (length == 0) {
+                        appendToEquation("(-");
+                        return;
+                    }
+                    boolean lastCharIsDigit = Character.isDigit(getLastChar(text));
+                    if (text.contains("(-")) {
+                        if (text.endsWith("(-")) {
+                            equationLabel.setText(text.substring(0, length - 2));
+                        } else if (text.indexOf("(-") == length - 3 && lastCharIsDigit) {
+                            equationLabel.setText(text.substring(0, length - 3) + getLastChar(text));
+                        }
+                    } else if (lastCharIsDigit) {
+                        equationLabel.setText(text.substring(0, length - 1) + "(-" + getLastChar(text));
+                    } else {
+                        appendToEquation("(-");
+                    }
+                });
+                break;
+            default:
+                if (isButtonOperator(button)) {
+                    button.addActionListener(e -> {
+                        String text = equationLabel.getText();
+                        int length = text.length();
+                        if (length == 0) {
+                            return;
+                        }
+                        char lastChar = getLastChar(text);
+                        if (isOperator(lastChar)) {
+                            equationLabel.setText(text.substring(0, length - 1) + button.getText());
+                            return;
+                        }
+                        if (lastChar == '.') {
+                            equationLabel.setText(text + "0" + button.getText());
+                            return;
+                        }
+                        if (length == 2 && text.charAt(0) == '.' && Character.isDigit(lastChar)) {
+                            equationLabel.setText("0." + lastChar + button.getText());
+                            return;
+                        }
+                        appendToEquation(button.getText());
+                    });
+                } else {
+                    button.addActionListener(e -> appendToEquation(button.getText()));
+                }
+                break;
+        }
     }
 
     private List<JButton> createButtons() {
         String[] names = {
-                "Seven", "Eight", "Nine", "Divide",
-                "Four", "Five", "Six", "Multiply",
+                "Parentheses", "", "Clear", "Delete",
+                "PowerTwo", "PowerY", "SquareRoot", "Divide",
+                "Seven", "Eight", "Nine", "Multiply",
+                "Four", "Five", "Six", "Subtract",
                 "One", "Two", "Three", "Add",
-                "Dot", "Zero", "Equals", "Subtract",
-                "Clear", "Delete"
+                "PlusMinus", "Zero", "Dot", "Equals"
         };
         String[] texts = {
-                "7", "8", "9", operators.get(3).toString(),
-                "4", "5", "6", operators.get(2).toString(),
-                "1", "2", "3", operators.get(0).toString(),
-                ".", "0", "=", "-",
-                "C", "D"
+                "( )", "CE", "C", "D",
+                "x²", "xⁿ", String.valueOf(SQRT_SYMBOL), String.valueOf(DIVIDE_SYMBOL),
+                "7", "8", "9", String.valueOf(MULTIPLY_SYMBOL),
+                "4", "5", "6", String.valueOf(MINUS_SYMBOL),
+                "1", "2", "3", String.valueOf(PLUS_SYMBOL),
+                "±", "0", ".", "=",
         };
         int[] x = {50, 100, 150, 200};
-        int[] y = {70, 120, 170, 220, 270};
+        int[] y = {70, 120, 170, 220, 270, 320};
         List<JButton> buttons = new ArrayList<>();
         int yIndex = 0;
         for (int i = 0; i < names.length; i++) {
@@ -179,53 +316,8 @@ public class Calculator extends JFrame {
             if (xIndex == 0 && i != 0) {
                 yIndex++;
             }
-            button.setBounds(x[xIndex], y[yIndex], 45, 45);
-            switch (names[i]) {
-                case "Equals":
-                    button.addActionListener(e -> this.evaluate());
-                    break;
-                case "Clear":
-                    button.addActionListener(e -> {
-                        resultLabel.setForeground(Color.BLACK);
-                        equationLabel.setText("");
-                    });
-                    break;
-                case "Delete":
-                    button.addActionListener(e -> {
-                        String text = equationLabel.getText();
-                        if (!text.isEmpty()) {
-                            equationLabel.setText(text.substring(0, text.length() - 1));
-                        }
-                    });
-                    break;
-                default:
-                    if (isButtonOperator(button)) {
-                        button.addActionListener(e -> {
-                            String text = equationLabel.getText();
-                            int length = text.length();
-                            if (length == 0) {
-                                return;
-                            }
-                            char lastChar = text.charAt(length - 1);
-                            if (operators.contains(lastChar)) {
-                                equationLabel.setText(text.substring(0, length - 1) + button.getText());
-                                return;
-                            }
-                            if (lastChar == '.') {
-                                equationLabel.setText(text + "0" + button.getText());
-                                return;
-                            }
-                            if (length == 2 && text.charAt(0) == '.' && Character.isDigit(lastChar)) {
-                                equationLabel.setText("0." + lastChar + button.getText());
-                                return;
-                            }
-                            equationLabel.setText(text + button.getText());
-                        });
-                    } else {
-                        button.addActionListener(e -> equationLabel.setText(equationLabel.getText() + button.getText()));
-                    }
-                    break;
-            }
+            button.setBounds(x[xIndex], y[yIndex], 47, 47);
+            addActionListener(button);
             buttons.add(button);
         }
         return buttons;
